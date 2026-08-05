@@ -1,7 +1,8 @@
 import random
 
+from datetime import date
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.db.supabase import supabase
@@ -9,12 +10,13 @@ from app.db.supabase import supabase
 router = APIRouter(prefix="/api/tourists", tags=["Tourists"])
 
 
+
 class TouristCreate(BaseModel):
-    name: str
-    phone: str
-    emergency_contact: str
-    entry_point: str
-    expected_exit_date: str
+    name: str = Field(min_length=2, max_length=100)
+    phone: str = Field(min_length=7, max_length=15)
+    emergency_contact: str = Field(min_length=7, max_length=15)
+    entry_point: str = Field(min_length=2, max_length=100)
+    expected_exit_date: date
 
 
 def generate_tourist_id():

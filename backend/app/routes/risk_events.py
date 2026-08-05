@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Literal
 
 from app.db.supabase import supabase
@@ -11,9 +11,8 @@ class RiskEventCreate(BaseModel):
     tourist_id: str
     risk_zone_id: str
     event_type: Literal["ENTERED_RISK_ZONE", "EXITED_RISK_ZONE"]
-    latitude: float
-    longitude: float
-
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
 
 @router.post("")
 def create_risk_event(payload: RiskEventCreate):
