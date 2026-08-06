@@ -7,7 +7,7 @@ from app.routes.tourists import router as tourists_router
 from app.routes.incidents import router as incidents_router
 from app.routes.risk_zones import router as risk_zones_router
 from app.routes.risk_events import router as risk_events_router
-
+from app.routes.dashboard import router as dashboard_router
 
 app = FastAPI(
     title="TouristShield API",
@@ -30,7 +30,7 @@ app.include_router(tourists_router)
 app.include_router(incidents_router)
 app.include_router(risk_zones_router)
 app.include_router(risk_events_router)
-
+app.include_router(dashboard_router)
 
 @app.get("/")
 def health():

@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_KEY: str
     FRONTEND_ORIGIN: str = "http://localhost:5173"
     TOURIST_ID_PREFIX: str = "NE"
+    TOURIST_APP_URL: str = "http://localhost:5174"
 
     model_config = SettingsConfigDict(
         env_file=".env",

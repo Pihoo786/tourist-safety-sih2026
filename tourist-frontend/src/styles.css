@@ -42,3 +42,205 @@
 .sos:disabled{opacity:.7}
 .sos-wrap small{display:block;font-size:10px;color:#80949b;margin-top:15px}
 .id-link{width:100%;border:1px solid #dbe5e7;background:#fff;border-radius:8px;padding:13px;display:flex;align-items:center;gap:11px;text-align:left;font-size:20px;color:#0d6670;cursor:pointer}.id-link span{font-size:11px;color:#294b55;font-weight:800;flex:1}.id-link small{display:block;color:#81949a;font-size:10px;font-weight:400;margin-top:2px}.back{border:0;background:none;color:#0d7c7a;font:10px 'DM Mono';padding:0;cursor:pointer}.id-page{text-align:center;padding-top:22px}.id-page h1{font-size:28px;margin:5px 0 25px}.id-card{background:linear-gradient(140deg,#0b5d70,#07384e);color:#fff;border-radius:14px;padding:22px;text-align:left;position:relative;min-height:310px;box-shadow:0 12px 25px #0a405236}.id-logo{font:10px 'DM Mono';color:#80e3d4}.id-qr{position:absolute;right:20px;top:58px;color:#103b4b;background:#fff;font-size:30px;line-height:19px;padding:7px}.id-card p{font:10px 'DM Mono';color:#9acacd;margin:70px 0 7px}.id-card h2{font:24px 'DM Mono';margin:0 0 20px}.id-card h3{font-size:18px;margin-bottom:23px}.active-dot{font:10px 'DM Mono';background:#0c907c;padding:5px;border-radius:3px}.id-card small{display:block;font-size:10px;color:#b2d3d9;margin-top:12px}.id-note{font-size:11px;line-height:1.6;color:#758a92;padding:5px 30px}.sos-screen{min-height:100vh;padding-top:140px;text-align:center}.sos-pulse{height:94px;width:94px;border-radius:50%;display:grid;place-items:center;background:#fde2e0;color:#d44650;font-size:38px;margin:auto;box-shadow:0 0 0 13px #fff0ef}.sos-screen.ACCEPTED .sos-pulse,.sos-screen.RESOLVED .sos-pulse{background:#ddf5ed;color:#087660;box-shadow:0 0 0 13px #edfaf6}.sos-screen h1{font-size:27px;margin:10px 0}.response-copy{font-size:13px;color:#61777f}.response-status{margin:30px 0;background:#fff;border:1px solid #e0ebec;border-radius:10px;padding:18px;font-size:12px;color:#11766b}.response-status p{color:#637980;line-height:1.55;margin:10px 0 0}.return{width:100%;margin-top:0}@media(max-width:430px){body{background:#f7faf9}}
+
+/* =========================================
+   PUBLIC TOURIST ID VERIFICATION
+========================================= */
+
+.verification-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, #0d6170 0, #07394c 45%, #052c3c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 18px;
+}
+
+.verification-card {
+  width: 100%;
+  max-width: 420px;
+  background: #f8fbfa;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 25, 35, 0.35);
+}
+
+.verification-brand {
+  background: #083e50;
+  color: white;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.verification-brand > span {
+  font-size: 32px;
+  color: #50dfcb;
+}
+
+.verification-brand b {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.6px;
+}
+
+.verification-brand small {
+  display: block;
+  margin-top: 3px;
+  font: 8px 'DM Mono';
+  letter-spacing: 1px;
+  color: #8dbbc2;
+}
+
+.verification-status {
+  text-align: center;
+  padding: 35px 25px 30px;
+  background: #e5f8f2;
+  color: #087364;
+}
+
+.verification-status.inactive {
+  background: #fff0e5;
+  color: #b25931;
+}
+
+.verification-check {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 16px;
+  font-size: 31px;
+  font-weight: 800;
+}
+
+.verification-status p {
+  font: 10px 'DM Mono';
+  letter-spacing: 1px;
+  margin: 0 0 7px;
+}
+
+.verification-status h1 {
+  font-size: 26px;
+  margin: 0 0 7px;
+}
+
+.verification-status small {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.verification-details {
+  padding: 27px 26px;
+}
+
+.verification-label {
+  font: 9px 'DM Mono';
+  letter-spacing: 1px;
+  color: #82969d;
+  margin-bottom: 6px;
+}
+
+.verification-details h2 {
+  font: 500 25px 'DM Mono';
+  color: #0a5365;
+  margin: 0 0 27px;
+}
+
+.verification-row {
+  padding: 13px 0;
+  border-top: 1px solid #e4ecee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.verification-row span {
+  font-size: 11px;
+  color: #788b92;
+}
+
+.verification-row b {
+  font-size: 12px;
+  color: #243f49;
+  text-align: right;
+}
+
+.verification-row .status-active {
+  color: #07806c;
+  font: 10px 'DM Mono';
+}
+
+.verification-row .status-inactive {
+  color: #c05943;
+  font: 10px 'DM Mono';
+}
+
+.verification-footer {
+  border-top: 1px solid #e2ebed;
+  padding: 17px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #82969d;
+}
+
+.verification-footer span {
+  color: #0b857e;
+}
+
+.verification-footer p {
+  margin: 0;
+  font-size: 9px;
+}
+
+/* Loading / invalid verification */
+
+.verification-loading,
+.verification-invalid {
+  padding: 55px 30px;
+  text-align: center;
+}
+
+.verification-logo {
+  color: #0b857e;
+  font-size: 50px;
+}
+
+.verification-invalid .verification-icon {
+  width: 65px;
+  height: 65px;
+  margin: 0 auto 20px;
+  border: 2px solid #d34d55;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #d34d55;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.verification-invalid h1 {
+  font-size: 24px;
+}
+
+.verification-invalid > p:not(.overline) {
+  color: #6f838b;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.verification-id {
+  margin-top: 22px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #edf3f4;
+  color: #536b74;
+  font: 13px 'DM Mono';
+}
