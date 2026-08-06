@@ -89,7 +89,23 @@ function checkAllZones(lat, lng) {
 const insideZones = checkAllZones(position.lat, position.lng);
 const isInside = insideZones.length > 0;
 const highestRisk = insideZones[0] || null; // First one is highest risk
+const nearestZone = RISK_ZONES.reduce((nearest, zone) => {
+  const distance = haversine(
+    position.lat,
+    position.lng,
+    zone.lat,
+    zone.lng
+  );
 
+  if (!nearest || distance < nearest.distance) {
+    return { ...zone, distance };
+  }
+
+  return nearest;
+}, null);
+
+const activeZone = highestRisk || nearestZone;
+const distance = activeZone ? activeZone.distance : 0;
 
   
   const goToRiskZone = () => {
@@ -112,7 +128,7 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
     setPosition({ lat: 25.5400, lng: 91.8600 });
   };  
 
-  return {(
+  return (
     <div style={{
       height: '100vh',
       width: '100%',
@@ -170,7 +186,7 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
               fontWeight: '600',
               color: isInside ? '#dc2626' : '#16a34a'
             }}>
-              {isInside ? 'HIGH RISK' : 'SAFE'}
+              {isInside ? `${activeZone?.level} RISK` : 'SAFE'}
             </span>
           </div>
         </div>
@@ -293,10 +309,10 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
             ✅ Safe
           </button>
         </div>
-
+        </div>
         {/* ============================================
             RIGHT SIDE PANEL (30% of laptop screen)
-            ============================================ */}
+            ========= =================================== */}
         <div style={{
           flex: '3',
           backgroundColor: 'white',
@@ -339,7 +355,7 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
                   fontSize: '18px',
                   color: isInside ? '#dc2626' : '#16a34a'
                 }}>
-                  {isInside ? 'High-Risk Zone' : 'Safe Zone'}
+                  {isInside ? `${activeZone?.level} Risk Zone` : 'Safe Zone'}
                 </div>
                 <div style={{ fontSize: '13px', color: '#6b7280' }}>
                   {isInside 
@@ -360,11 +376,11 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span>Risk zone:</span>
-                <strong>{RISK_ZONE.name}</strong>
+                <strong>{activeZone?.name || 'None'}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Risk level:</span>
-                <strong style={{ color: '#dc2626' }}>{RISK_ZONE.level}</strong>
+                <strong style={{ color: '#dc2626' }}>{activeZone?.level || 'SAFE'}</strong>
               </div>
             </div>
           </div>
@@ -456,7 +472,7 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
             }}>
               <div style={{ fontSize: '24px' }}>🛡️</div>
               <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937' }}>
-                {isInside ? 'HIGH' : 'LOW'}
+                {isInside ? activeZone?.level : 'SAFE'}
               </div>
               <div style={{ fontSize: '12px', color: '#6b7280' }}>risk level</div>
             </div>
@@ -477,5 +493,6 @@ const highestRisk = insideZones[0] || null; // First one is highest risk
       </div>
     </div>
   );
+}
 
 export default App;
