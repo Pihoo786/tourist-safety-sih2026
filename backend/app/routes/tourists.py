@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 
 from app.core.config import settings
 from app.db.supabase import supabase
+from app.services.qr_service import generate_qr_base64
 
 router = APIRouter(prefix="/api/tourists", tags=["Tourists"])
 
@@ -50,7 +51,7 @@ def register_tourist(tourist: TouristCreate):
         "phone": tourist.phone,
         "emergency_contact": tourist.emergency_contact,
         "entry_point": tourist.entry_point,
-        "expected_exit_date": tourist.expected_exit_date,
+        "expected_exit_date": tourist.expected_exit_date.isoformat(),
         "status": "ACTIVE",
     }
 
@@ -58,8 +59,12 @@ def register_tourist(tourist: TouristCreate):
 
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to register tourist")
+    
+    tourist_data = result.data[0]
+    tourist_data["qr_code"] = generate_qr_base64(tourist_data["tourist_id"])
 
-    return result.data[0]
+    return tourist_data
+
 
 
 @router.get("/{tourist_id}")
