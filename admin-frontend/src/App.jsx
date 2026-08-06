@@ -1,122 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useEffect, useState } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const blank = { name: '', phone: '', emergency_contact: '', id_reference: '', entry_point: 'Guwahati Checkpost', travel_duration: '3 days', expected_exit_date: '' }
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const Badge = ({ children }) => <span className={`badge ${children}`}>{children}</span>
+const api = async (path, options) => { const r = await fetch(`${API}${path}`, options); const body = await r.json(); if (!r.ok) throw new Error(body.detail || 'Request failed'); return body }
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+export default function App() {
+  const [view, setView] = useState('command')
+  const [form, setForm] = useState(blank)
+  const [created, setCreated] = useState(null)
+  const [stats, setStats] = useState({ active_tourists: 0, active_sos: 0, risk_alerts: 0 })
+  const [incidents, setIncidents] = useState([])
+  const [tourists, setTourists] = useState([])
+  const [notice, setNotice] = useState('')
+  const load = async () => { try { const [s, i, t] = await Promise.all([api('/api/dashboard'), api('/api/incidents'), api('/api/tourists')]); setStats(s); setIncidents(i); setTourists(t) } catch { setNotice('Waiting for the local FastAPI server on port 8000.') } }
+  useEffect(() => { load(); const tick = setInterval(load, 2500); return () => clearInterval(tick) }, [])
+  const register = async (e) => { e.preventDefault(); try { const data = await api('/api/tourists', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) }); setCreated(data); setNotice(`Digital ID ${data.tourist_id} is now ACTIVE.`); setForm(blank); load() } catch (e) { setNotice(e.message) } }
+  const changeStatus = async (id, status) => { try { await api(`/api/incidents/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) }); setNotice(`Incident ${status.toLowerCase()}.`); load() } catch (e) { setNotice(e.message) } }
+  const selected = incidents.find(i => i.status !== 'RESOLVED') || incidents[0]
+  return <div className="shell"><aside><div className="brand"><span>⬡</span> TOURIST<br />SHIELD</div><p className="workspace">GOVERNMENT OF MEGHALAYA</p><nav>{[['command','◈','Command Centre'],['register','＋','Register Tourist'],['tourists','☷','Tourist Registry'],['incidents','⚑','Incidents']].map(([id,icon,label]) => <button key={id} className={view===id?'active':''} onClick={() => setView(id)}><b>{icon}</b>{label}</button>)}</nav><div className="operator">● CONTROL ROOM ONLINE<br /><small>Shillong • UTC+05:30</small></div></aside><main><header><div><p className="eyebrow">LIVE OPERATIONS</p><h1>{view === 'command' ? 'Tourist Safety Command Centre' : view === 'register' ? 'Register incoming tourist' : view === 'tourists' ? 'Tourist Registry' : 'Incident response'}</h1></div><div className="live"><i /> LIVE MONITORING</div></header>{notice && <div className="notice">{notice}<button onClick={()=>setNotice('')}>×</button></div>}{view === 'command' && <><section className="stats"><Stat icon="◉" label="Active tourists" value={stats.active_tourists} tone="blue"/><Stat icon="⚑" label="Active SOS" value={stats.active_sos} tone="red"/><Stat icon="◈" label="Risk alerts" value={stats.risk_alerts} tone="amber"/></section><section className="grid"><div className="panel map"><div className="panel-title"><span>LIVE MAP</span><small>Shillong operational area</small></div><div className="map-art"><div className="route"/><div className="zone z1">HIGH RISK<br/><small>Restricted trail</small></div><div className="zone z2">CAUTION</div><div className="pin">⌖</div><div className="map-legend"><b>●</b> Active tourist <em>●</em> Risk zone</div></div></div><div className="panel alerts"><div className="panel-title"><span>RECENT ALERTS</span><button onClick={load}>↻ Refresh</button></div>{incidents.length ? incidents.slice(0,4).map(i=><IncidentLine key={i.id} incident={i} onClick={() => setView('incidents')}/>) : <div className="empty">No active incidents.<br/><small>New SOS alerts appear here instantly.</small></div>}</div></section>{selected && <section className="panel response"><div><p className="danger-label">🚨 {selected.incident_type} ALERT · {selected.status}</p><h2>{selected.tourist.name} <span>{selected.tourist.tourist_id}</span></h2><p>📍 {selected.latitude.toFixed(4)}, {selected.longitude.toFixed(4)} &nbsp; · &nbsp; {new Date(selected.created_at).toLocaleTimeString()}</p></div><div className="response-actions">{selected.status === 'NEW' && <button className="accept" onClick={()=>changeStatus(selected.id,'ACCEPTED')}>ACCEPT SOS</button>}{selected.status === 'ACCEPTED' && <button className="resolve" onClick={()=>changeStatus(selected.id,'RESOLVED')}>MARK RESOLVED</button>}</div></section>}</>}{view === 'register' && <section className="register-layout"><form className="panel form" onSubmit={register}><h2>Checkpost registration</h2><p className="sub">A temporary, verifiable Tourist ID is generated upon registration.</p><div className="fields">{[['name','Full name','text'],['phone','Phone number','tel'],['emergency_contact','Emergency contact','tel'],['id_reference','ID details / reference','text'],['entry_point','Entry point','text'],['travel_duration','Travel duration','text'],['expected_exit_date','Expected exit','date']].map(([key,label,type])=><label key={key}>{label}<input required={key!=='id_reference' && key!=='travel_duration'} type={type} value={form[key]} onChange={e=>setForm({...form,[key]:e.target.value})}/></label>)}</div><button className="primary" type="submit">GENERATE TOURIST ID →</button></form>{created ? <DigitalCard tourist={created}/> : <div className="registration-aside"><span>01</span><h2>Issue a safer journey</h2><p>The traveller can activate their mobile safety pass using the generated ID.</p></div>}</section>}{view === 'tourists' && <Registry tourists={tourists}/>} {view === 'incidents' && <IncidentBoard incidents={incidents} changeStatus={changeStatus}/>}</main></div>
 }
-
-export default App
+function Stat({icon,label,value,tone}) { return <div className={`stat ${tone}`}><div className="stat-icon">{icon}</div><div><p>{label}</p><strong>{value}</strong></div></div> }
+function IncidentLine({incident,onClick}) { return <button className="incident-line" onClick={onClick}><span className={incident.incident_type==='SOS'?'sos-icon':'risk-icon'}>{incident.incident_type==='SOS'?'!':'▲'}</span><div><b>{incident.incident_type} · {incident.tourist.tourist_id}</b><small>{incident.tourist.name} · {incident.status}</small></div><time>{new Date(incident.created_at).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</time></button> }
+function DigitalCard({tourist}) { return <div className="digital"><p>TOURIST SHIELD · DIGITAL ID</p><div className="qr">▦<br/>▦</div><h2>{tourist.tourist_id}</h2><h3>{tourist.name}</h3><Badge>ACTIVE</Badge><small>Valid until {tourist.expected_exit_date}</small></div> }
+function Registry({tourists}) { return <section className="panel table"><div className="panel-title"><span>REGISTERED TOURISTS</span><small>{tourists.length} records</small></div>{tourists.length ? <table><thead><tr><th>TOURIST</th><th>CONTACT</th><th>ENTRY POINT</th><th>STATUS</th></tr></thead><tbody>{tourists.map(t=><tr key={t.id}><td><b>{t.name}</b><small>{t.tourist_id}</small></td><td>{t.phone}</td><td>{t.entry_point}</td><td><Badge>{t.status}</Badge></td></tr>)}</tbody></table> : <div className="empty">No tourists registered yet.</div>}</section> }
+function IncidentBoard({incidents,changeStatus}) { return <section className="incident-board">{incidents.length ? incidents.map(i=><article className="panel incident-card" key={i.id}><div className="card-head"><span className="alarm">{i.incident_type==='SOS'?'🚨':'⚠️'}</span><div><p>{i.incident_type} ALERT</p><h2>{i.tourist.name}</h2><small>{i.tourist.tourist_id} · {i.risk_level}</small></div><Badge>{i.status}</Badge></div><div className="location">📍 {i.latitude.toFixed(5)}, {i.longitude.toFixed(5)}<br/><small>Emergency contact: {i.tourist.emergency_contact}</small></div><div className="card-actions">{i.status==='NEW'&&<button className="accept" onClick={()=>changeStatus(i.id,'ACCEPTED')}>ACCEPT SOS</button>}{i.status==='ACCEPTED'&&<button className="resolve" onClick={()=>changeStatus(i.id,'RESOLVED')}>MARK RESOLVED</button>}{i.status==='RESOLVED'&&<span className="done">✓ Response closed</span>}</div></article>) : <div className="empty">No incidents have been received.</div>}</section> }
