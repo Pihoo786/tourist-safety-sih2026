@@ -61,8 +61,9 @@ def register_tourist(tourist: TouristCreate):
         raise HTTPException(status_code=500, detail="Failed to register tourist")
     
     tourist_data = result.data[0]
-    tourist_data["qr_code"] = generate_qr_base64(tourist_data["tourist_id"])
-
+    tourist_data["qr_code"] = generate_qr_base64(
+        f"{settings.TOURIST_APP_URL.rstrip('/')}/{tourist_data['tourist_id']}"
+    )
     return tourist_data
 
 @router.get("")
@@ -89,6 +90,8 @@ def get_tourist(tourist_id: str):
         raise HTTPException(status_code=404, detail="Tourist not found")
 
     tourist_data = result.data[0]
-    tourist_data["qr_code"] = generate_qr_base64(tourist_data["tourist_id"])
+    tourist_data["qr_code"] = generate_qr_base64(
+    f"{settings.TOURIST_APP_URL.rstrip('/')}/{tourist_data['tourist_id']}"
+)
 
     return tourist_data
