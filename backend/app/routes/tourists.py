@@ -62,7 +62,7 @@ def register_tourist(tourist: TouristCreate):
     
     tourist_data = result.data[0]
     tourist_data["qr_code"] = generate_qr_base64(
-        f"{settings.TOURIST_APP_URL.rstrip('/')}/{tourist_data['tourist_id']}"
+        f"{settings.TOURIST_APP_URL.rstrip('/')}/tourist/{tourist_data['tourist_id']}"
     )
     return tourist_data
 
@@ -91,7 +91,7 @@ def get_tourist(tourist_id: str):
 
     tourist_data = result.data[0]
     tourist_data["qr_code"] = generate_qr_base64(
-    f"{settings.TOURIST_APP_URL.rstrip('/')}/{tourist_data['tourist_id']}"
-)
+        f"{settings.TOURIST_APP_URL.rstrip('/')}/tourist/{tourist_data['tourist_id']}"
+    )
 
     return tourist_data
