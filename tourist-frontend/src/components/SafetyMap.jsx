@@ -14,30 +14,14 @@ const DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon
 
-const RISK_ZONES = [
+const DEFAULT_RISK_ZONES = [
   {
-    id: 1,
-    name: 'Police Bazar',
-    lat: 25.5795,
-    lng: 91.8940,
-    radius: 500,
-    level: 'HIGH'
-  },
-  {
-    id: 2,
-    name: 'Laitumkhrah Market',
-    lat: 25.5650,
-    lng: 91.8850,
-    radius: 400,
-    level: 'MEDIUM'
-  },
-  {
-    id: 3,
-    name: 'Golf Course',
-    lat: 25.5900,
-    lng: 91.9000,
-    radius: 600,
-    level: 'LOW'
+    id: '1b8fa19b-a8e2-4502-89e9-5be45c11922b',
+    name: 'Demo High Risk Zone',
+    latitude: 25.5788,
+    longitude: 91.8933,
+    radius_m: 500,
+    risk_level: 'HIGH'
   }
 ]
 
@@ -61,29 +45,38 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c
 }
 
-export function detectRiskZone(latitude, longitude) {
-  const insideZones = RISK_ZONES
-    .map(zone => ({
-      ...zone,
-      distance: haversine(
-        latitude,
-        longitude,
-        zone.lat,
-        zone.lng
-      )
-    }))
-    .filter(zone => zone.distance <= zone.radius)
+export function detectRiskZone(latitude, longitude, zones = DEFAULT_RISK_ZONES) {
+  if (!zones || !zones.length) return null
+
+  const insideZones = zones
+    .map(zone => {
+      const zLat = zone.latitude ?? zone.lat
+      const zLng = zone.longitude ?? zone.lng
+      const zRad = zone.radius_m ?? zone.radius ?? 500
+      const zLevel = zone.risk_level ?? zone.level ?? 'SAFE'
+      return {
+        ...zone,
+        latitude: zLat,
+        longitude: zLng,
+        radius_m: zRad,
+        risk_level: zLevel,
+        distance: haversine(latitude, longitude, zLat, zLng)
+      }
+    })
+    .filter(zone => zone.distance <= zone.radius_m)
 
   return (
-    insideZones.find(zone => zone.level === 'HIGH') ||
-    insideZones.find(zone => zone.level === 'MEDIUM') ||
-    insideZones.find(zone => zone.level === 'LOW') ||
+    insideZones.find(zone => zone.risk_level === 'CRITICAL') ||
+    insideZones.find(zone => zone.risk_level === 'HIGH') ||
+    insideZones.find(zone => zone.risk_level === 'CAUTION') ||
+    insideZones.find(zone => zone.risk_level === 'SAFE') ||
     null
   )
 }
 
-export default function SafetyMap({ location }) {
+export default function SafetyMap({ location, riskZones = DEFAULT_RISK_ZONES }) {
   if (!location) return null
+  const activeZones = (riskZones && riskZones.length) ? riskZones : DEFAULT_RISK_ZONES
 
   return (
     <div
@@ -107,29 +100,29 @@ export default function SafetyMap({ location }) {
           attribution="&copy; OpenStreetMap contributors"
         />
 
-        {RISK_ZONES.map(zone => (
-          <Circle
-            key={zone.id}
-            center={[zone.lat, zone.lng]}
-            radius={zone.radius}
-            pathOptions={{
-              color:
-                zone.level === 'HIGH'
-                  ? '#dc2626'
-                  : zone.level === 'MEDIUM'
-                    ? '#f59e0b'
-                    : '#22c55e',
-              fillColor:
-                zone.level === 'HIGH'
-                  ? '#dc2626'
-                  : zone.level === 'MEDIUM'
-                    ? '#f59e0b'
-                    : '#22c55e',
-              fillOpacity: 0.15,
-              weight: 2
-            }}
-          />
-        ))}
+        {activeZones.map(zone => {
+          const zLat = zone.latitude ?? zone.lat
+          const zLng = zone.longitude ?? zone.lng
+          const zRad = zone.radius_m ?? zone.radius ?? 500
+          const zLevel = zone.risk_level ?? zone.level ?? 'SAFE'
+          const isDanger = zLevel === 'CRITICAL' || zLevel === 'HIGH'
+          const isCaution = zLevel === 'CAUTION'
+          const color = isDanger ? '#dc2626' : isCaution ? '#f59e0b' : '#22c55e'
+
+          return (
+            <Circle
+              key={zone.id}
+              center={[zLat, zLng]}
+              radius={zRad}
+              pathOptions={{
+                color,
+                fillColor: color,
+                fillOpacity: 0.15,
+                weight: 2
+              }}
+            />
+          )
+        })}
 
         <Marker
           position={[
