@@ -61,14 +61,7 @@ def register_tourist(tourist: TouristCreate):
         raise HTTPException(status_code=500, detail="Failed to register tourist")
     
     tourist_data = result.data[0]
-    verification_url = (
-        f"{settings.TOURIST_APP_URL.rstrip('/')}"
-        f"/verify/{tourist_data['tourist_id']}"
-    )
-
-    tourist_data["qr_code"] = generate_qr_base64(
-        verification_url
-    )
+    tourist_data["qr_code"] = generate_qr_base64(tourist_data["tourist_id"])
 
     return tourist_data
 
@@ -95,4 +88,7 @@ def get_tourist(tourist_id: str):
     if not result.data:
         raise HTTPException(status_code=404, detail="Tourist not found")
 
-    return result.data[0]
+    tourist_data = result.data[0]
+    tourist_data["qr_code"] = generate_qr_base64(tourist_data["tourist_id"])
+
+    return tourist_data

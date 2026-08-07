@@ -161,6 +161,7 @@ export default function App() {
   )
   const [tourist, setTourist] = useState(null)
   const [location, setLocation] = useState(demoLocation)
+  const [riskZones, setRiskZones] = useState([])
   const [risk, setRisk] = useState('SAFE')
   const [zone, setZone] = useState(null)
   const [incident, setIncident] = useState(null)
@@ -170,7 +171,8 @@ export default function App() {
 
   const detectedZone = detectRiskZone(
     location.latitude,
-    location.longitude
+    location.longitude,
+    riskZones
   )
 
   // P3 REALTIME INTEGRATION
@@ -206,6 +208,19 @@ export default function App() {
     }
   }
 
+  // Fetch live risk zones on mount
+  useEffect(() => {
+    const fetchZones = async () => {
+      try {
+        const zones = await api('/api/risk-zones')
+        setRiskZones(zones || [])
+      } catch (e) {
+        console.error('Failed to fetch risk zones:', e)
+      }
+    }
+    fetchZones()
+  }, [])
+
   // Load tourist + get browser location
   useEffect(() => {
     if (id) {
@@ -227,21 +242,23 @@ export default function App() {
   // Detect whether current location falls inside a risk zone
   useEffect(() => {
     if (detectedZone) {
-      setRisk(detectedZone.level)
+      setRisk(detectedZone.risk_level || detectedZone.level || 'CAUTION')
       setZone(detectedZone.name)
     } else {
       setRisk('SAFE')
       setZone(null)
     }
-  }, [location.latitude, location.longitude])
+  }, [location.latitude, location.longitude, detectedZone])
 
   const simulateRisk = async () => {
     const risky = risk === 'SAFE'
+    const targetZone = riskZones.length > 0 ? riskZones[0] : null
+    const targetZoneId = targetZone ? targetZone.id : '1b8fa19b-a8e2-4502-89e9-5be45c11922b'
 
     const newLocation = risky
       ? {
-          latitude: 25.5795,
-          longitude: 91.8940
+          latitude: targetZone?.latitude ?? 25.5788,
+          longitude: targetZone?.longitude ?? 91.8933
         }
       : demoLocation
 
@@ -256,6 +273,7 @@ export default function App() {
           },
           body: JSON.stringify({
             tourist_id: tourist.tourist_id,
+            risk_zone_id: targetZoneId,
             latitude: newLocation.latitude,
             longitude: newLocation.longitude,
             event_type: risky
@@ -417,7 +435,7 @@ export default function App() {
               <small>
                 {risk === 'SAFE'
                   ? 'Shillong · Location sharing is active'
-                  : `${zone}. Please return to the recommended route.`}
+                  : `${zone || 'Risk Zone'}. Please return to the recommended route.`}
               </small>
             </div>
           </section>
@@ -443,7 +461,7 @@ export default function App() {
               {location.longitude.toFixed(4)}
             </small>
 
-            <SafetyMap location={location} />
+            <SafetyMap location={location} riskZones={riskZones} />
 
             <button
               type="button"
@@ -496,6 +514,108 @@ export default function App() {
           </button>
         </>
       )}
+    </div>
+  )
+}
+
+function DigitalID({ tourist, back }) {
+  return (
+    <>
+      <button className="back" onClick={back}>
+        ‹ HOME
+      </button>
+
+      <div className="id-page">
+        <p className="overline">VERIFIABLE DIGITAL PASS</p>
+
+        <h1>Your Tourist ID</h1>
+
+        <div className="id-card">
+          <div className="id-logo">⬡ TOURIST SHIELD</div>
+
+          {tourist.qr_code ? (
+            <img
+              src={tourist.qr_code}
+              alt={`QR code for ${tourist.tourist_id}`}
+              className="digital-qr"
+              style={{ width: '140px', height: '140px', margin: '16px auto', display: 'block', borderRadius: '8px' }}
+            />
+          ) : (
+            <div className="id-qr">
+              ▦<br />▦
+            </div>
+          )}
+
+          <p>TOURIST ID</p>
+
+          <h2>{tourist.tourist_id}</h2>
+
+          <h3>{tourist.name}</h3>
+
+          <div>
+            <span className="active-dot">● {tourist.status || 'ACTIVE'}</span>
+
+            <small>Valid until {tourist.expected_exit_date}</small>
+          </div>
+        </div>
+
+        <p className="id-note">
+          This ID automatically expires once your journey has ended.
+        </p>
+      </div>
+    </>
+  )
+}
+
+function SOSScreen({ incident, back }) {
+  const status = incident?.status || 'NEW'
+
+  const copy =
+    status === 'NEW'
+      ? [
+          'SOS SENT',
+          'Contacting the nearest control room...',
+          'Your live location and emergency contact have been shared.'
+        ]
+      : status === 'ACCEPTED'
+      ? [
+          'HELP REQUEST ACCEPTED',
+          'A response team has been notified.',
+          'Please stay in a safe, visible place. Help is on the way.'
+        ]
+      : [
+          'INCIDENT RESOLVED',
+          'The control room has closed this request.',
+          'Thank you for confirming that you are safe.'
+        ]
+
+  return (
+    <div className={`sos-screen ${status}`}>
+      <div className="sos-pulse">
+        {status === 'RESOLVED' ? '✓' : '🆘'}
+      </div>
+
+      <p className="overline">EMERGENCY RESPONSE</p>
+
+      <h1>{copy[0]}</h1>
+
+      <p className="response-copy">{copy[1]}</p>
+
+      <div className="response-status">
+        <b>
+          {status === 'NEW'
+            ? '● REQUEST RECEIVED'
+            : status === 'ACCEPTED'
+            ? '✓ CONTROL ROOM ACCEPTED'
+            : '✓ CASE CLOSED'}
+        </b>
+
+        <p>{copy[2]}</p>
+      </div>
+
+      <button className="return" onClick={back}>
+        RETURN TO HOME
+      </button>
     </div>
   )
 }
